@@ -44,9 +44,13 @@
   .chipsel button.all{border-color:var(--purple);font-weight:800}
   .chipsel button.all.sel{background:linear-gradient(180deg,var(--purple),var(--purple-d));color:#fff;border-color:var(--purple)}
   @media (max-width:640px){
-    .chipsel{gap:5px}
-    .chipsel button{padding:6px 10px;font-size:12px}
+    /* Mobiilissa joukkuenapit aina 4 saraketta -> 12 joukkuetta mahtuu kolmelle riville */
+    .chipsel{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+    .chipsel button{padding:8px 4px;font-size:11px;line-height:1.15;text-align:center;white-space:normal}
     .tabs button{padding:9px 4px;font-size:12px}
+    /* Vieritettävässä sticky-tilassa takaisin yhdelle vieritettävälle riville */
+    .controls.compact .chipsel{display:flex}
+    .controls.compact .chipsel button{white-space:nowrap}
   }
   .tabs{display:flex;gap:6px;margin-top:10px}
   .tabs button{flex:1;border:1px solid var(--line);background:var(--card);color:var(--muted);padding:10px 6px;border-radius:11px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
