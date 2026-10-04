@@ -32,7 +32,11 @@
   .dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 1.6s infinite}
   @keyframes pulse{50%{opacity:.4}}
 
-  .controls{padding:4px 0 8px}
+  .controls{position:sticky;top:0;z-index:6;background:var(--bg);padding:6px 0 8px}
+  .controls.compact{box-shadow:0 8px 18px rgba(0,0,0,.4)}
+  .controls.compact .chipsel{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .controls.compact .chipsel::-webkit-scrollbar{display:none}
+  .controls.compact .chipsel button{flex:0 0 auto}
   .chipsel{display:flex;flex-wrap:wrap;gap:6px}
   .chipsel button{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:999px;padding:7px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .12s,border-color .12s}
   .chipsel button:hover{border-color:var(--cyan)}
@@ -50,6 +54,10 @@
   .tabs button.active{background:linear-gradient(180deg,var(--cyan),var(--cyan-d));color:#05283a;border-color:var(--cyan)}
   .tabs button.active.islive{background:var(--live);color:#fff;border-color:var(--live)}
   .tabs button .lbubble{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--live);margin-left:5px;vertical-align:middle;animation:pulse 1.2s infinite}
+  .subtabs{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .subtabs button{border:1px solid var(--line);background:var(--card);color:var(--muted);padding:6px 12px;border-radius:999px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+  .subtabs button.sel{background:var(--card2);color:var(--text);border-color:var(--cyan)}
+  .subtabs button.sel.live{color:var(--live);border-color:var(--live)}
 
   .sh{display:flex;align-items:center;gap:9px;margin:18px 2px 9px;font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
   .sh.live{color:var(--live);font-size:13px}
@@ -132,6 +140,7 @@
   <div class="controls">
     <div class="chipsel" id="teamsel"></div>
     <div class="tabs" id="tabs"></div>
+    <div class="subtabs" id="subtabs"></div>
   </div>
   <div id="content"><div class="loading"><div class="spin"></div>Haetaan otteluita…</div></div>
   <div class="foot2">Lähde: Lentopalloliiton tulospalvelu (TorneoPal) · <span class="upd"><span class="dot"></span> päivitetty <span id="upd">–</span></span> · <a id="clublink" href="https://tulospalvelu.lentopallo.fi/club/40/matches" target="_blank" rel="noopener">viralliset sivut ↗</a></div>
@@ -171,7 +180,7 @@ function clubPageBtns(){
 }
 const teamUrl=(id,sub)=>`https://tulospalvelu.lentopallo.fi/team/${id}/${sub||'fixture'}`;
 const WD=['Su','Ma','Ti','Ke','To','Pe','La'];
-let MATCHES=[], team='ALL', tab='today';
+let MATCHES=[], team='ALL', tab='today', todaySub='all';
 const $=s=>document.querySelector(s);
 const num=v=>{const n=parseInt(v,10);return isNaN(n)?0:n;};
 
@@ -290,10 +299,26 @@ function renderTabs(live){
   $('#tabs').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{tab=b.dataset.t;render();}));
 }
 
+function renderSub(list){
+  const box=$('#subtabs');
+  if(!(team==='ALL'&&tab==='today')){ box.innerHTML=''; return; }
+  const today=list.filter(m=>m.date===TODAY);
+  const nLive=today.filter(isLive).length;
+  const nUp=today.filter(m=>!isLive(m)&&!isPlayed(m)).length;
+  const nDone=today.filter(isPlayed).length;
+  const defs=[['all','Kaikki',today.length,false],['live','Käynnissä',nLive,true],['up','Tulossa',nUp,false],['done','Pelatut',nDone,false]];
+  box.innerHTML=defs.map(([k,label,n,isLiveBtn])=>{
+    const sel=todaySub===k?('sel'+(isLiveBtn&&n>0?' live':'')):'';
+    return `<button data-s="${k}" class="${sel}">${label}${n?` (${n})`:''}</button>`;
+  }).join('');
+  box.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{todaySub=b.dataset.s;render();}));
+}
+
 function render(){
   const list=MATCHES.filter(m=>team==='ALL'||skOf(m)===team);
   const live=list.filter(isLive);
   renderTabs(live.length);
+  renderSub(list);
   const el=$('#content');
   const ids=tabsFor().map(t=>t[0]); if(!ids.includes(tab)) tab=ids[0];
 
@@ -325,8 +350,12 @@ function render(){
   if(tab==='today'){
     const today=list.filter(m=>m.date===TODAY);
     const tLive=today.filter(isLive), tUp=today.filter(m=>!isLive(m)&&!isPlayed(m)).sort(byAsc), tDone=today.filter(isPlayed).sort(byAsc);
-    const html=sec('● Käynnissä',tLive,'live')+sec('Tänään tulossa',tUp)+sec('Tänään pelatut',tDone);
-    el.innerHTML=html||'<div class="empty">Ei otteluita tänään.</div>';
+    let html='';
+    if(todaySub==='live') html=sec('● Käynnissä',tLive,'live')||'<div class="empty">Ei käynnissä olevia otteluita.</div>';
+    else if(todaySub==='up') html=sec('Tänään tulossa',tUp)||'<div class="empty">Ei tulossa olevia otteluita tänään.</div>';
+    else if(todaySub==='done') html=sec('Tänään pelatut',tDone)||'<div class="empty">Ei vielä pelattuja otteluita tänään.</div>';
+    else html=(sec('● Käynnissä',tLive,'live')+sec('Tänään tulossa',tUp)+sec('Tänään pelatut',tDone))||'<div class="empty">Ei otteluita tänään.</div>';
+    el.innerHTML=html;
   } else if(tab==='week'){
     const wk=list.filter(m=>m.date&&m.date>=WK.mon&&m.date<=WK.sun);
     const wUp=wk.filter(m=>!isPlayed(m)).sort(byAsc), wDone=wk.filter(isPlayed).sort(byDesc);
@@ -360,6 +389,15 @@ async function load(){
 }
 function cycle(){ load().finally(()=>{ const ms=MATCHES.some(isLive)?15000:30000; setTimeout(cycle,ms); }); }
 cycle();
+
+// Vieritettäessä joukkuenapit tiivistyvät yhdelle vieritettävälle riville
+(function(){
+  const ctr=document.querySelector('.controls'); if(!ctr) return;
+  let ticking=false;
+  function upd(){ ctr.classList.toggle('compact', window.scrollY>80); ticking=false; }
+  window.addEventListener('scroll',()=>{ if(!ticking){ ticking=true; requestAnimationFrame(upd); } }, {passive:true});
+  upd();
+})();
 </script>
 </body>
 </html>
