@@ -45,7 +45,7 @@
   .chipsel button.all.sel{background:linear-gradient(180deg,var(--purple),var(--purple-d));color:#fff;border-color:var(--purple)}
   @media (max-width:640px){
     /* Mobiilissa joukkuenapit aina 4 saraketta -> 12 joukkuetta mahtuu kolmelle riville */
-    .chipsel{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+    .chipsel{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:1fr;gap:5px}
     .chipsel button{padding:8px 4px;font-size:11px;line-height:1.15;text-align:center;white-space:normal}
     .tabs button{padding:9px 4px;font-size:12px}
     /* Vieritettävässä sticky-tilassa takaisin yhdelle vieritettävälle riville */
@@ -278,7 +278,7 @@ function seriesList(){
 function buildTeams(){
   const chips=['ALL',...seriesList()];
   const el=$('#teamsel');
-  el.innerHTML=chips.map(v=>`<button data-val="${v.replace(/"/g,'&quot;')}" class="${v==='ALL'?'all ':''}${v===team?'sel':''}">${v==='ALL'?'Kaikki joukkueet':seriesLabel(v)}</button>`).join('');
+  el.innerHTML=chips.map(v=>`<button data-val="${v.replace(/"/g,'&quot;')}" class="${v==='ALL'?'all ':''}${v===team?'sel':''}">${v==='ALL'?'Kaikki':seriesLabel(v)}</button>`).join('');
   el.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>selectTeam(b.dataset.val)));
 }
 function selectTeam(v){
