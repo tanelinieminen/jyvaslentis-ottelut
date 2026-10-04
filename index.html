@@ -65,6 +65,8 @@
   .sh .c{background:var(--card2);border:1px solid var(--line);border-radius:999px;font-size:11px;padding:1px 8px}
   .sh a{text-decoration:none;text-transform:none;letter-spacing:0;font-weight:700;font-size:11px;color:#05283a;background:var(--cyan);padding:4px 10px;border-radius:999px;white-space:nowrap}
   .sh a.ghost{background:transparent;color:var(--cyan);border:1px solid var(--line)}
+  .dday{display:flex;align-items:center;gap:8px;margin:13px 2px 8px;font-size:13px;font-weight:800;color:var(--gold);text-transform:capitalize}
+  .dday::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(255,210,63,.35),transparent)}
 
   .card{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px;box-shadow:var(--shadow);position:relative}
   .card.islive{border-color:var(--live);box-shadow:0 0 0 1px var(--live),var(--shadow)}
@@ -224,7 +226,8 @@ function matchCard(m){
   const sets=setsArr(m);
   const setpts=s=>{ if(!sets.length||upcoming) return '<div class="setpts"></div>'; return '<div class="setpts">'+sets.map(p=>`<span>${s==='A'?p[0]:p[1]}</span>`).join('')+'</div>'; };
   const venue=m.venue_name||m.venue_location_name||'';
-  const when=fmtWhen(m);
+  // Kortissa näytetään vain kellonaika; päivämäärä tulee ryhmän päiväotsikosta (byDays)
+  const when = m.date ? (m.time?('klo '+m.time.slice(0,5)):'') : 'Aika avoin';
   return `<div class="card ${live?'islive':''}">
     <div class="row1"><a class="cat" href="${teamUrl(o.id,'info')}" target="_blank" rel="noopener">${catLabel(m.category_name||m.category_abbrevation)}${m.group_name?` <span class="grp">· ${m.group_name}</span>`:''}</a>${pill||`<span class="when">${when}</span>`}</div>
     <div class="teams">${tm('A')}${sc('A')}${setpts('A')}${tm('B')}${sc('B')}${setpts('B')}</div>
@@ -234,7 +237,11 @@ function matchCard(m){
 const byAsc=(a,b)=>dtStr(a).localeCompare(dtStr(b));
 const byDesc=(a,b)=>dtStr(b).localeCompare(dtStr(a));
 function sec(title,list,cls){ if(!list.length) return ''; return `<div class="sh ${cls||''}">${title}<span class="c">${list.length}</span><span class="ln"></span></div>`+list.map(matchCard).join(''); }
-function moreBlock(title,list,asc){ if(!list.length) return ''; return `<details class="more"><summary>${title} · ${list.length}</summary>${list.slice().sort(asc?byAsc:byDesc).map(matchCard).join('')}</details>`; }
+function moreBlock(title,list,asc){ if(!list.length) return ''; return `<details class="more"><summary>${title} · ${list.length}</summary>${byDays(list.slice().sort(asc?byAsc:byDesc))}</details>`; }
+// Päiväotsikko + sen alla kyseisen päivän pelit (käytetään, kun listassa on monen eri päivän otteluita)
+function dayLabel(d){ if(!d) return 'Aika vahvistamatta'; const wd=WD[new Date(d+'T12:00:00Z').getUTCDay()]; return wd+' '+d.slice(8,10)+'.'+d.slice(5,7)+'.'+d.slice(0,4); }
+function byDays(list){ const g={}, order=[]; list.forEach(m=>{const k=m.date||''; if(!(k in g)){g[k]=[];order.push(k);} g[k].push(m);}); return order.map(k=>`<div class="dday">${dayLabel(k)}</div>`+g[k].map(matchCard).join('')).join(''); }
+function secDays(title,list,cls){ if(!list.length) return ''; return `<div class="sh ${cls||''}">${title}<span class="c">${list.length}</span><span class="ln"></span></div>`+byDays(list); }
 
 /* ---- tab definitions by mode ---- */
 function tabsFor(){ return team==='ALL'
@@ -342,7 +349,7 @@ function render(){
       const tm=list.filter(m=>ours(m).name===t.name);
       const tl=tm.filter(isLive), up=tm.filter(m=>!isLive(m)&&!isPlayed(m)&&m.date).sort(byAsc), tba=tm.filter(m=>!isPlayed(m)&&!m.date), done=tm.filter(isPlayed).sort(byDesc);
       html+=`<div class="sh">${t.name}<span class="ln"></span><a class="ghost" href="${teamUrl(t.id,'info')}" target="_blank" rel="noopener">Taulukko ↗</a></div>`;
-      const body=tl.map(matchCard).join('')+up.map(matchCard).join('')+tba.map(matchCard).join('')+done.map(matchCard).join('');
+      const body=tl.map(matchCard).join('')+byDays(up)+tba.map(matchCard).join('')+byDays(done);
       html+= body || '<div class="empty">Ei otteluita.</div>';
     });
     el.innerHTML=html||'<div class="empty">Ei otteluita.</div>';
@@ -364,7 +371,7 @@ function render(){
     const wUp=wk.filter(m=>!isPlayed(m)).sort(byAsc), wDone=wk.filter(isPlayed).sort(byDesc);
     const later=list.filter(m=>m.date&&m.date>WK.sun&&!isPlayed(m));
     const tba=list.filter(m=>!isPlayed(m)&&!m.date);
-    let html=sec('Tulossa tällä viikolla',wUp)+sec('Pelatut tällä viikolla',wDone);
+    let html=secDays('Tulossa tällä viikolla',wUp)+secDays('Pelatut tällä viikolla',wDone);
     if(!wk.length) html='<div class="empty">Ei otteluita tällä viikolla.</div>';
     html+=moreBlock('Myöhemmin kaudella',later,true)+moreBlock('Aika vahvistamatta',tba,true);
     el.innerHTML=html;
@@ -375,11 +382,11 @@ function render(){
     const hTba=home.filter(m=>!isPlayed(m)&&!m.date);
     const hDone=home.filter(isPlayed).sort(byDesc);
     let html=`<div class="note2">🏠 Ottelut, joissa JyväsLentiksen joukkue pelaa ja JyväsLentis toimii järjestäjänä (koti­ottelut ja JyväsLentiksen isännöimät junioriturnaukset).</div>`;
-    html+=sec('● Käynnissä',hLive,'live')+sec('Tulossa',hUp)+moreBlock('Aika vahvistamatta',hTba,true)+sec('Pelatut',hDone);
+    html+=sec('● Käynnissä',hLive,'live')+secDays('Tulossa',hUp)+moreBlock('Aika vahvistamatta',hTba,true)+secDays('Pelatut',hDone);
     el.innerHTML = home.length ? html : '<div class="empty">Ei kotipelejä.</div>';
   } else { // past
     const past=list.filter(m=>isPlayed(m)||(m.date&&m.date<TODAY)).sort(byDesc);
-    el.innerHTML=past.length?past.map(matchCard).join(''):'<div class="empty">Ei pelattuja otteluita vielä.</div>';
+    el.innerHTML=past.length?byDays(past):'<div class="empty">Ei pelattuja otteluita vielä.</div>';
   }
   $('#clublink').href=clubUrl+'/matches';
 }
