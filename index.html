@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JyväsLentis · Ottelut 2026–27</title>
+<style>
+  :root{
+    --purple:#6e3fa3; --purple-d:#4a2a73; --cyan:#16a6dd; --cyan-d:#0e7fab;
+    --bg:#15102b; --bg2:#1c1638; --card:#231b45; --card2:#2c2456; --line:#39306a;
+    --text:#f1eefb; --muted:#a99fce; --green:#2fd06b; --live:#ff2e74; --gold:#ffd23f;
+    --radius:15px; --shadow:0 8px 24px rgba(0,0,0,.3);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:
+      radial-gradient(1100px 440px at 85% -10%, rgba(22,166,221,.16) 0%, transparent 60%),
+      radial-gradient(1000px 500px at 5% 0%, rgba(110,63,163,.30) 0%, transparent 55%),
+      var(--bg) fixed;
+    color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;padding:12px;min-height:100vh;
+  }
+  .wrap{max-width:780px;margin:0 auto}
+  .top{display:flex;align-items:center;gap:13px;flex-wrap:wrap;margin-bottom:6px}
+  .logo{height:62px;width:auto;flex:0 0 auto;filter:drop-shadow(0 3px 10px rgba(0,0,0,.4))}
+  .ttl{font-size:19px;font-weight:800;letter-spacing:.2px}
+  .ttl small{display:block;font-size:12px;font-weight:600;color:var(--muted)}
+  .sitebtn{margin-left:auto;align-self:center;background:linear-gradient(180deg,var(--cyan),var(--cyan-d));color:#05283a;font-weight:800;text-decoration:none;padding:8px 13px;border-radius:999px;font-size:13px;white-space:nowrap;box-shadow:var(--shadow)}
+  .sitebtn:active{transform:scale(.98)}
+  .upd{font-size:11px;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 1.6s infinite}
+  @keyframes pulse{50%{opacity:.4}}
+
+  .controls{position:sticky;top:0;background:linear-gradient(180deg,var(--bg) 82%,rgba(21,16,43,0));padding:10px 0 8px;z-index:6}
+  .chipsel{display:flex;flex-wrap:wrap;gap:7px}
+  .chipsel button{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:999px;padding:8px 13px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .12s,border-color .12s}
+  .chipsel button:hover{border-color:var(--cyan)}
+  .chipsel button.sel{background:linear-gradient(180deg,var(--cyan),var(--cyan-d));color:#05283a;border-color:var(--cyan)}
+  .chipsel button.all{border-color:var(--purple);font-weight:800}
+  .chipsel button.all.sel{background:linear-gradient(180deg,var(--purple),var(--purple-d));color:#fff;border-color:var(--purple)}
+  .tabs{display:flex;gap:6px;margin-top:10px}
+  .tabs button{flex:1;border:1px solid var(--line);background:var(--card);color:var(--muted);padding:10px 6px;border-radius:11px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tabs button .b{display:inline-block;background:rgba(255,255,255,.12);border-radius:999px;font-size:11px;padding:0 6px;margin-left:4px}
+  .tabs button.active{background:linear-gradient(180deg,var(--cyan),var(--cyan-d));color:#05283a;border-color:var(--cyan)}
+  .tabs button.active.islive{background:var(--live);color:#fff;border-color:var(--live)}
+  .tabs button .lbubble{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--live);margin-left:5px;vertical-align:middle;animation:pulse 1.2s infinite}
+
+  .sh{display:flex;align-items:center;gap:9px;margin:18px 2px 9px;font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+  .sh.live{color:var(--live);font-size:13px}
+  .sh .ln{flex:1;height:1px;background:var(--line)}
+  .sh .c{background:var(--card2);border:1px solid var(--line);border-radius:999px;font-size:11px;padding:1px 8px}
+  .sh a{text-decoration:none;text-transform:none;letter-spacing:0;font-weight:700;font-size:11px;color:#05283a;background:var(--cyan);padding:4px 10px;border-radius:999px;white-space:nowrap}
+  .sh a.ghost{background:transparent;color:var(--cyan);border:1px solid var(--line)}
+
+  .card{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px;box-shadow:var(--shadow);position:relative}
+  .card.islive{border-color:var(--live);box-shadow:0 0 0 1px var(--live),var(--shadow)}
+  .row1{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:9px}
+  .cat{font-size:11px;font-weight:800;color:var(--cyan);text-decoration:none;line-height:1.3}
+  .cat .grp{color:var(--muted);font-weight:600}
+  .when{font-size:11px;color:var(--muted);text-align:right;white-space:nowrap;font-weight:700}
+  .pill{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;padding:3px 9px;border-radius:999px;white-space:nowrap}
+  .s-live{background:var(--live);color:#fff;animation:pulse 1.3s infinite}
+  .s-res{background:rgba(47,208,107,.16);color:var(--green)}
+  .teams{display:grid;grid-template-columns:1fr auto auto;gap:6px 12px;align-items:center}
+  .tm{display:flex;align-items:center;gap:8px;font-size:16px;min-width:0}
+  .tm .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tm.us .nm{font-weight:800;color:#fff}
+  .tm.us::before{content:"";width:4px;height:18px;border-radius:3px;background:var(--cyan);flex:0 0 auto}
+  .sc{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;text-align:right;min-width:18px}
+  .win{color:#fff} .lose{color:var(--muted)}
+  .setpts{display:flex;gap:5px;justify-content:flex-end;font-size:13px;font-variant-numeric:tabular-nums;color:#c2b4ee}
+  .setpts span{min-width:17px;text-align:right}
+  .setpts span.sw{color:#fff;font-weight:700}
+  .foot{margin-top:9px;padding-top:8px;border-top:1px dashed var(--line);display:flex;justify-content:space-between;gap:8px;font-size:11px;color:var(--muted)}
+  .foot .flinks{display:flex;gap:14px;align-items:center}
+  .foot a{color:var(--cyan);text-decoration:none;font-weight:700;white-space:nowrap}
+  .foot a.sb{color:var(--live);font-weight:800}
+
+  details.more{margin-top:12px;border:1px solid var(--line);border-radius:12px;background:var(--card);overflow:hidden}
+  details.more>summary{cursor:pointer;list-style:none;padding:12px 14px;font-size:13px;font-weight:800;color:var(--muted);display:flex;align-items:center;gap:8px}
+  details.more>summary::-webkit-details-marker{display:none}
+  details.more>summary::after{content:"▾";margin-left:auto;transition:transform .2s}
+  details.more[open]>summary::after{transform:rotate(180deg)}
+  details.more .card{margin:0 12px 8px}
+  details.more .card:first-of-type{margin-top:2px}
+
+  .linkcard{background:linear-gradient(130deg,var(--purple),var(--cyan-d));border-radius:16px;padding:20px 18px;text-align:center;box-shadow:var(--shadow);margin-top:6px}
+  .linkcard h3{margin:0 0 6px;font-size:18px}
+  .linkcard p{margin:0 0 14px;font-size:13px;color:#ece6ff;opacity:.95;line-height:1.5}
+  .linkcard a{display:inline-block;background:#fff;color:#2a1a52;font-weight:800;text-decoration:none;padding:12px 20px;border-radius:12px;font-size:14px}
+  .sitebtn2{display:block;text-align:center;background:linear-gradient(130deg,var(--purple),var(--cyan-d));color:#fff;font-weight:800;text-decoration:none;padding:12px 14px;border-radius:12px;margin:2px 0 14px;box-shadow:var(--shadow)}
+  .sitebtn2:active{transform:scale(.995)}
+  .teampages{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin:2px 0 14px}
+  .teampages .lbl{font-size:12px;font-weight:800;color:var(--muted)}
+  .teampages a{background:linear-gradient(130deg,var(--purple),var(--cyan-d));color:#fff;font-weight:800;text-decoration:none;padding:7px 13px;border-radius:999px;font-size:13px;white-space:nowrap;box-shadow:var(--shadow)}
+  .note2{color:var(--muted);font-size:13px;margin:4px 2px 12px;line-height:1.5}
+  .trow{display:flex;justify-content:space-between;align-items:center;gap:10px;background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:8px;text-decoration:none;color:var(--text);font-weight:700;font-size:15px;box-shadow:var(--shadow)}
+  .trow:active{background:var(--card2)}
+  .trow .go{color:var(--cyan);font-weight:800;white-space:nowrap;font-size:13px}
+
+  .empty{text-align:center;color:var(--muted);padding:26px 14px;font-size:14px;background:var(--card);border:1px dashed var(--line);border-radius:13px}
+  .loading{text-align:center;color:var(--muted);padding:46px}
+  .spin{width:30px;height:30px;border:3px solid var(--line);border-top-color:var(--cyan);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 12px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .foot2{margin-top:20px;text-align:center;font-size:10px;color:var(--muted)}
+  .foot2 a{color:var(--cyan);text-decoration:none}
+  .sitelink{color:var(--cyan);text-decoration:none;font-weight:700}
+  .sep{color:var(--line)}
+  .news{margin-top:24px}
+  .news h3{font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin:0 2px 10px;display:flex;align-items:center;gap:9px}
+  .news h3 .ln{flex:1;height:1px;background:var(--line)}
+  .news a.item{display:flex;justify-content:space-between;gap:12px;align-items:center;background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px;text-decoration:none;color:var(--text);box-shadow:var(--shadow)}
+  .news a.item:hover{border-color:var(--cyan)}
+  .news a.item .ttl2{font-weight:700;font-size:14px;line-height:1.35}
+  .news a.item .d{color:var(--muted);font-size:11px;white-space:nowrap}
+  .news .allnews{display:inline-block;margin:4px 2px;color:var(--cyan);text-decoration:none;font-weight:800;font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <img class="logo" src="https://static.jopox.fi/jyvaslentis/logos/logo-300.png" alt="JyväsLentis">
+    <div class="ttl">Ottelut<small>Kausi 2026–27</small></div>
+    <a class="sitebtn" href="https://www.jyvaslentis.fi" target="_blank" rel="noopener">🌐 Seuran kotisivut ↗</a>
+  </div>
+  <div class="controls">
+    <div class="chipsel" id="teamsel"></div>
+    <div class="tabs" id="tabs"></div>
+  </div>
+  <div id="content"><div class="loading"><div class="spin"></div>Haetaan otteluita…</div></div>
+  <div class="foot2">Lähde: Lentopalloliiton tulospalvelu (TorneoPal) · <span class="upd"><span class="dot"></span> päivitetty <span id="upd">–</span></span> · <a id="clublink" href="https://tulospalvelu.lentopallo.fi/club/40/matches" target="_blank" rel="noopener">viralliset sivut ↗</a></div>
+</div>
+
+<script>
+const API='https://lentopallo-api.torneopal.net/taso/rest/getMatches';
+const CLUB='40', SEASON='2026-27', CLUBNAME='JyväsLentis';
+const clubUrl='https://tulospalvelu.lentopallo.fi/club/40';
+const SITE='https://www.jyvaslentis.fi';
+// Sarja -> joukkueen oma kotisivu jyvaslentis.fi:ssä (/joukkueet/<id>). Päivitä/korjaa tarvittaessa.
+const TEAM_SITE={
+  'Miesten 2-sarja & Suomen Cup':'/joukkueet/645',
+  'Naisten 2-Liiga & Suomen Cup':'/joukkueet/648',
+  'U20-tytöt':'/joukkueet/638',
+  'U20- pojat':'/joukkueet/642',
+  'U17-pojat':'/joukkueet/748',
+  'U15-tytöt':'/joukkueet/650',
+  'U15-pojat':'/joukkueet/644',
+  'U13-tytöt aluesarja':'/joukkueet/640',
+  'U13-pojat aluesarja':'/joukkueet/646',
+  'U11-juniorit tiikerisarja':'/joukkueet/647'
+};
+// Joukkuekohtainen seurasivu (esim. U17-tytöillä kolme eri joukkuetta -> kolme sivua)
+const TEAM_NAME_PAGE={
+  'JyLe/B1':'/joukkueet/749',    // U17 B1 tytöt
+  'JyLe/U17T2':'/joukkueet/637', // U17 B2 tytöt
+  'JyLe/U17T3':'/joukkueet/649'  // U17 B3 tytöt
+};
+function clubPageFor(name){ return TEAM_NAME_PAGE[name] || TEAM_SITE[team] || ''; }
+function seriesPages(){ const s=new Set(); teamsInCat(team).forEach(t=>{const p=clubPageFor(t.name); if(p)s.add(p);}); return [...s]; }
+function clubPageBtns(){
+  const ps=seriesPages(); if(!ps.length) return '';
+  if(ps.length===1) return `<a class="sitebtn2" href="${SITE+ps[0]}" target="_blank" rel="noopener">🟣 ${seriesLabel(team)} – joukkueen sivu ↗</a>`;
+  const links=teamsInCat(team).map(t=>{ const u=clubPageFor(t.name); return u?`<a href="${SITE+u}" target="_blank" rel="noopener">${t.name} ↗</a>`:''; }).join('');
+  return `<div class="teampages"><span class="lbl">Joukkueen sivut:</span>${links}</div>`;
+}
+const teamUrl=(id,sub)=>`https://tulospalvelu.lentopallo.fi/team/${id}/${sub||'fixture'}`;
+const WD=['Su','Ma','Ti','Ke','To','Pe','La'];
+let MATCHES=[], team='ALL', tab='today';
+const $=s=>document.querySelector(s);
+const num=v=>{const n=parseInt(v,10);return isNaN(n)?0:n;};
+
+/* ---- time helpers (Helsinki) ---- */
+function helNow(){ return new Date().toLocaleString('sv-SE',{timeZone:'Europe/Helsinki'}); } // 'YYYY-MM-DD HH:MM:SS'
+const TODAY = helNow().slice(0,10);
+function weekBounds(){
+  const t=new Date(TODAY+'T12:00:00Z'); const dow=(t.getUTCDay()+6)%7;
+  const mon=new Date(t); mon.setUTCDate(t.getUTCDate()-dow);
+  const sun=new Date(mon); sun.setUTCDate(mon.getUTCDate()+6);
+  const iso=d=>d.toISOString().slice(0,10);
+  return {mon:iso(mon), sun:iso(sun)};
+}
+const WK=weekBounds();
+
+/* ---- match helpers ---- */
+function side(m){ return (m.club_A_id===CLUB||m.club_A_name===CLUBNAME)?'A':'B'; }
+function ours(m){ const s=side(m); return {s, name:m['team_'+s+'_name'], id:m['team_'+s+'_id']}; }
+function dtStr(m){ return m.date? (m.date+' '+((m.time||'00:00').slice(0,5))) : ''; }
+function played(m){ return (m.status||'').toLowerCase()==='played' || (m.winner_id&&m.winner_id!==''&&m.winner_id!=='0'); }
+function setsArr(m){ const o=[]; for(let i=1;i<=5;i++){const a=m['p'+i+'s_A'],b=m['p'+i+'s_B']; if((a!==''&&a!=null)||(b!==''&&b!=null)) o.push([num(a),num(b)]);} return o; }
+function isLive(m){
+  if(played(m)) return false;
+  if((num(m.fs_A)+num(m.fs_B)>0)||(m.live_period&&num(m.live_period)>0)) return true;
+  if(m.date && dtStr(m) < helNow().slice(0,16) && m.date===TODAY) return true; // alkanut tänään, ei vielä tulosta
+  return false;
+}
+const isPlayed=played;
+
+/* ---- rendering ---- */
+function fmtWhen(m){ if(!m.date) return 'Aika avoin'; const wd=WD[new Date(m.date+'T12:00:00Z').getUTCDay()]; return wd+' '+m.date.slice(8,10)+'.'+m.date.slice(5,7)+'.'+(m.time?(' '+m.time.slice(0,5)):''); }
+function matchCard(m){
+  const live=isLive(m), done=isPlayed(m), upcoming=!live&&!done;
+  const o=ours(m);
+  const pill = done?'<span class="pill s-res">Päättynyt</span>' : '';
+  const sc=s=>{ if(upcoming) return '<div class="sc lose">–</div>'; const a=num(m.fs_A),b=num(m.fs_B),v=s==='A'?a:b,ov=s==='A'?b:a; return `<div class="sc ${v>=ov?'win':'lose'}">${v}</div>`; };
+  const tm=s=>`<div class="tm ${o.s===s?'us':''}"><span class="nm">${m['team_'+s+'_name']||'?'}</span></div>`;
+  const sets=setsArr(m);
+  const setpts=s=>{ if(!sets.length||upcoming) return '<div class="setpts"></div>'; return '<div class="setpts">'+sets.map(p=>`<span>${s==='A'?p[0]:p[1]}</span>`).join('')+'</div>'; };
+  const venue=m.venue_name||m.venue_location_name||'';
+  const when=fmtWhen(m);
+  return `<div class="card ${live?'islive':''}">
+    <div class="row1"><a class="cat" href="${teamUrl(o.id,'info')}" target="_blank" rel="noopener">${catLabel(m.category_name||m.category_abbrevation)}${m.group_name?` <span class="grp">· ${m.group_name}</span>`:''}</a>${pill||`<span class="when">${when}</span>`}</div>
+    <div class="teams">${tm('A')}${sc('A')}${setpts('A')}${tm('B')}${sc('B')}${setpts('B')}</div>
+    <div class="foot"><span>${pill?when:(venue||'')}</span><span class="flinks">${live?`<a class="sb" href="https://torneopal.lentopallo.fi/taso/scoreboard.php?otteluid=${m.match_id}" target="_blank" rel="noopener">Scoreboard ↗</a>`:''}<a href="https://tulospalvelu.lentopallo.fi/match/${m.match_id}" target="_blank" rel="noopener">Ottelu ↗</a></span></div>
+  </div>`;
+}
+const byAsc=(a,b)=>dtStr(a).localeCompare(dtStr(b));
+const byDesc=(a,b)=>dtStr(b).localeCompare(dtStr(a));
+function sec(title,list,cls){ if(!list.length) return ''; return `<div class="sh ${cls||''}">${title}<span class="c">${list.length}</span><span class="ln"></span></div>`+list.map(matchCard).join(''); }
+function moreBlock(title,list,asc){ if(!list.length) return ''; return `<details class="more"><summary>${title} · ${list.length}</summary>${list.slice().sort(asc?byAsc:byDesc).map(matchCard).join('')}</details>`; }
+
+/* ---- tab definitions by mode ---- */
+function tabsFor(){ return team==='ALL'
+  ? [['today','Tänään'],['week','Tällä viikolla']]
+  : [['ottelut','Ottelut'],['lohko','Lohko'],['pelaajat','Pelaajat']]; }
+
+const catOf=m=>m.category_name||m.category_abbrevation||'';
+// U13-poikajoukkueet pelaavat tyttöjen aluesarjassa, mutta ovat virallisesti poikien sarjassa.
+// Päivitä tämä lista kausittain (joukkueen team_id löytyy tulospalvelu.lentopallo.fi/team/<id>).
+const U13_BOYS_IDS = ['64952','64954','64955']; // Köpi, Upi, Lelu
+// Näyttönimen siistiminen: U11 on sekasarja -> juniorit
+function catLabel(c){ return /U11-tytöt tiikerisarja/i.test(c) ? 'U11-juniorit tiikerisarja' : c; }
+// Sarjavalinnan lyhyt näyttönimi (Suomen Cup pois napista tiiviyden vuoksi)
+function seriesLabel(k){ return k.replace(' & Suomen Cup',''); }
+// Yhdistä aikuisten sarja + Suomen Cup samaan kokonaisuuteen
+function seriesKey(c){
+  if(/Miesten 2-sarja/i.test(c)||/Miesten Suomen Cup/i.test(c)) return 'Miesten 2-sarja & Suomen Cup';
+  if(/Naisten 2-Liiga/i.test(c)||/Naisten Suomen Cup/i.test(c)) return 'Naisten 2-Liiga & Suomen Cup';
+  return catLabel(c);
+}
+function skOf(m){
+  const c=catOf(m);
+  if(/U13-tytöt aluesarja/i.test(c)) return U13_BOYS_IDS.includes(ours(m).id) ? 'U13-pojat aluesarja' : 'U13-tytöt aluesarja';
+  return seriesKey(c);
+}
+function ageRank(s){ const m=s.match(/U(\d+)/i); return m?parseInt(m[1],10):99; } // juniorit iän mukaan, aikuiset viimeiseksi
+function seriesList(){
+  return [...new Set(MATCHES.map(skOf).filter(Boolean))].sort((a,b)=> ageRank(a)-ageRank(b) || a.localeCompare(b,'fi'));
+}
+function buildTeams(){
+  const chips=['ALL',...seriesList()];
+  const el=$('#teamsel');
+  el.innerHTML=chips.map(v=>`<button data-val="${v.replace(/"/g,'&quot;')}" class="${v==='ALL'?'all ':''}${v===team?'sel':''}">${v==='ALL'?'Kaikki joukkueet':seriesLabel(v)}</button>`).join('');
+  el.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>selectTeam(b.dataset.val)));
+}
+function selectTeam(v){
+  team=v; tab=(v==='ALL')?'today':'ottelut';
+  $('#teamsel').querySelectorAll('button').forEach(b=>b.classList.toggle('sel',b.dataset.val===v));
+  $('#clublink').href=(v==='ALL')?clubUrl+'/matches':clubUrl;
+  render();
+}
+function teamsInCat(cat){
+  const m={}; MATCHES.filter(x=>skOf(x)===cat).forEach(x=>{const o=ours(x); if(o.name) m[o.name]=o.id;});
+  return Object.keys(m).sort((a,b)=>a.localeCompare(b,'fi')).map(n=>({name:n,id:m[n]}));
+}
+function seriesCats(cat){ return [...new Set(MATCHES.filter(x=>skOf(x)===cat).map(catOf))]; }
+function teamsDetailed(cat){
+  const seen={}, arr=[];
+  MATCHES.filter(x=>skOf(x)===cat).forEach(x=>{ const o=ours(x); if(!o.name) return; const c=catOf(x); const key=(o.id||o.name)+'|'+c; if(seen[key]) return; seen[key]=1; arr.push({name:o.name,id:o.id,cat:catLabel(c)}); });
+  arr.sort((a,b)=> (a.cat||'').localeCompare(b.cat||'','fi') || a.name.localeCompare(b.name,'fi'));
+  return arr;
+}
+function linkList(cat,sub){
+  const multi=seriesCats(cat).length>1;
+  return teamsDetailed(cat).map(t=>`<a class="trow" href="${teamUrl(t.id,sub)}" target="_blank" rel="noopener"><span>${multi?`<b style="color:var(--cyan)">${t.cat}</b> · `:''}${t.name}</span><span class="go">Avaa ↗</span></a>`).join('');
+}
+
+function renderTabs(live){
+  const defs=tabsFor();
+  $('#tabs').innerHTML=defs.map(([id,label])=>{
+    const liveTab = (id==='today'||id==='ottelut');
+    const bub = (liveTab&&live>0)?'<span class="lbubble"></span>':'';
+    return `<button data-t="${id}" class="${id===tab?'active':''} ${liveTab&&live>0&&id===tab?'islive':''}">${label}${bub}</button>`;
+  }).join('');
+  $('#tabs').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{tab=b.dataset.t;render();}));
+}
+
+function render(){
+  const list=MATCHES.filter(m=>team==='ALL'||skOf(m)===team);
+  const live=list.filter(isLive);
+  renderTabs(live.length);
+  const el=$('#content');
+  const ids=tabsFor().map(t=>t[0]); if(!ids.includes(tab)) tab=ids[0];
+
+  if(team!=='ALL'){
+    const cp=clubPageBtns();
+    if(tab==='lohko'){
+      el.innerHTML=cp+`<div class="note2"><b>📊 Sarjataulukot</b> (lohkot, jatkolohkot ja pudotuspelit) avautuvat viralliseen tulospalveluun, jossa ne päivittyvät automaattisesti:</div>`+linkList(team,'info');
+      return;
+    }
+    if(tab==='pelaajat'){
+      el.innerHTML=cp+`<div class="note2"><b>👥 Pelaajat & pisteet</b> löytyvät virallisesta tulospalvelusta:</div>`+linkList(team,'players');
+      return;
+    }
+    // ottelut: ryhmitelty joukkueittain sarjan sisällä
+    const teams=teamsInCat(team);
+    let html=cp;
+    teams.forEach(t=>{
+      const tm=list.filter(m=>ours(m).name===t.name);
+      const tl=tm.filter(isLive), up=tm.filter(m=>!isLive(m)&&!isPlayed(m)&&m.date).sort(byAsc), tba=tm.filter(m=>!isPlayed(m)&&!m.date), done=tm.filter(isPlayed).sort(byDesc);
+      html+=`<div class="sh">${t.name}<span class="ln"></span><a class="ghost" href="${teamUrl(t.id,'info')}" target="_blank" rel="noopener">Taulukko ↗</a></div>`;
+      const body=tl.map(matchCard).join('')+up.map(matchCard).join('')+tba.map(matchCard).join('')+done.map(matchCard).join('');
+      html+= body || '<div class="empty">Ei otteluita.</div>';
+    });
+    el.innerHTML=html||'<div class="empty">Ei otteluita.</div>';
+    return;
+  }
+
+  // ALL modes
+  if(tab==='today'){
+    const today=list.filter(m=>m.date===TODAY);
+    const tLive=today.filter(isLive), tUp=today.filter(m=>!isLive(m)&&!isPlayed(m)).sort(byAsc), tDone=today.filter(isPlayed).sort(byAsc);
+    const html=sec('● Käynnissä',tLive,'live')+sec('Tänään tulossa',tUp)+sec('Tänään pelatut',tDone);
+    el.innerHTML=html||'<div class="empty">Ei otteluita tänään.</div>';
+  } else if(tab==='week'){
+    const wk=list.filter(m=>m.date&&m.date>=WK.mon&&m.date<=WK.sun);
+    const wUp=wk.filter(m=>!isPlayed(m)).sort(byAsc), wDone=wk.filter(isPlayed).sort(byDesc);
+    const later=list.filter(m=>m.date&&m.date>WK.sun&&!isPlayed(m));
+    const tba=list.filter(m=>!isPlayed(m)&&!m.date);
+    let html=sec('Tulossa tällä viikolla',wUp)+sec('Pelatut tällä viikolla',wDone);
+    if(!wk.length) html='<div class="empty">Ei otteluita tällä viikolla.</div>';
+    html+=moreBlock('Myöhemmin kaudella',later,true)+moreBlock('Aika vahvistamatta',tba,true);
+    el.innerHTML=html;
+  } else { // past
+    const past=list.filter(m=>isPlayed(m)||(m.date&&m.date<TODAY)).sort(byDesc);
+    el.innerHTML=past.length?past.map(matchCard).join(''):'<div class="empty">Ei pelattuja otteluita vielä.</div>';
+  }
+  $('#clublink').href=clubUrl+'/matches';
+}
+
+let lastSig=null, lastSsig=null;
+async function load(){
+  try{
+    const j=await fetch(`${API}?club_id=${CLUB}&season_id=${SEASON}`).then(r=>r.json());
+    const raw=j.matches||[];
+    const sig=JSON.stringify(raw.map(m=>[m.match_id,m.status,m.winner_id,m.live_period,m.date,m.time,m.fs_A,m.fs_B,m.p1s_A,m.p1s_B,m.p2s_A,m.p2s_B,m.p3s_A,m.p3s_B,m.p4s_A,m.p4s_B,m.p5s_A,m.p5s_B]));
+    MATCHES=raw.filter(m=>side(m));
+    const ssig=seriesList().join('|');
+    if(ssig!==lastSsig){ buildTeams(); lastSsig=ssig; }   // rakenna napit uudelleen vain jos sarjat muuttuivat
+    if(sig!==lastSig){ lastSig=sig; render(); }   // piirrä uudelleen vain kun jotain muuttui
+    $('#upd').textContent=new Date().toLocaleTimeString('fi-FI',{hour:'2-digit',minute:'2-digit'});
+  }catch(e){
+    $('#content').innerHTML='<div class="empty">Otteluiden haku epäonnistui. Katso <a href="https://tulospalvelu.lentopallo.fi/club/40/matches" target="_blank" style="color:var(--cyan)">viralliset sivut ↗</a>.</div>';
+  }
+}
+load(); setInterval(load,30000);
+</script>
+</body>
+</html>
