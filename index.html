@@ -209,6 +209,9 @@ function isLive(m){
   return false;
 }
 const isPlayed=played;
+// Kotipeli: JyväsLentiksen joukkue pelaa JA JyväsLentis järjestää.
+// Junioriturnauksissa järjestäjä = round_club_id; aikuisten sarjapeleissä järjestäjä = kotijoukkue (club_A).
+function isHome(m){ return m.round_club_id==='40' || ((!m.round_club_id||m.round_club_id==='') && m.club_A_id==='40'); }
 
 /* ---- rendering ---- */
 function fmtWhen(m){ if(!m.date) return 'Aika avoin'; const wd=WD[new Date(m.date+'T12:00:00Z').getUTCDay()]; return wd+' '+m.date.slice(8,10)+'.'+m.date.slice(5,7)+'.'+(m.time?(' '+m.time.slice(0,5)):''); }
@@ -235,7 +238,7 @@ function moreBlock(title,list,asc){ if(!list.length) return ''; return `<details
 
 /* ---- tab definitions by mode ---- */
 function tabsFor(){ return team==='ALL'
-  ? [['today','Tänään'],['week','Tällä viikolla']]
+  ? [['today','Tänään'],['week','Tällä viikolla'],['home','Kotipelit']]
   : [['ottelut','Ottelut'],['lohko','Lohko'],['pelaajat','Pelaajat']]; }
 
 const catOf=m=>m.category_name||m.category_abbrevation||'';
@@ -365,6 +368,15 @@ function render(){
     if(!wk.length) html='<div class="empty">Ei otteluita tällä viikolla.</div>';
     html+=moreBlock('Myöhemmin kaudella',later,true)+moreBlock('Aika vahvistamatta',tba,true);
     el.innerHTML=html;
+  } else if(tab==='home'){
+    const home=list.filter(isHome);
+    const hLive=home.filter(isLive);
+    const hUp=home.filter(m=>!isLive(m)&&!isPlayed(m)&&m.date).sort(byAsc);
+    const hTba=home.filter(m=>!isPlayed(m)&&!m.date);
+    const hDone=home.filter(isPlayed).sort(byDesc);
+    let html=`<div class="note2">🏠 Ottelut, joissa JyväsLentiksen joukkue pelaa ja JyväsLentis toimii järjestäjänä (koti­ottelut ja JyväsLentiksen isännöimät junioriturnaukset).</div>`;
+    html+=sec('● Käynnissä',hLive,'live')+sec('Tulossa',hUp)+moreBlock('Aika vahvistamatta',hTba,true)+sec('Pelatut',hDone);
+    el.innerHTML = home.length ? html : '<div class="empty">Ei kotipelejä.</div>';
   } else { // past
     const past=list.filter(m=>isPlayed(m)||(m.date&&m.date<TODAY)).sort(byDesc);
     el.innerHTML=past.length?past.map(matchCard).join(''):'<div class="empty">Ei pelattuja otteluita vielä.</div>';
