@@ -32,18 +32,16 @@
   .dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 1.6s infinite}
   @keyframes pulse{50%{opacity:.4}}
 
-  .controls{position:sticky;top:0;background:linear-gradient(180deg,var(--bg) 82%,rgba(21,16,43,0));padding:10px 0 8px;z-index:6}
-  .chipsel{display:flex;flex-wrap:wrap;gap:7px}
-  .chipsel button{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:999px;padding:8px 13px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .12s,border-color .12s}
+  .controls{padding:4px 0 8px}
+  .chipsel{display:flex;flex-wrap:wrap;gap:6px}
+  .chipsel button{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:999px;padding:7px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .12s,border-color .12s}
   .chipsel button:hover{border-color:var(--cyan)}
   .chipsel button.sel{background:linear-gradient(180deg,var(--cyan),var(--cyan-d));color:#05283a;border-color:var(--cyan)}
   .chipsel button.all{border-color:var(--purple);font-weight:800}
   .chipsel button.all.sel{background:linear-gradient(180deg,var(--purple),var(--purple-d));color:#fff;border-color:var(--purple)}
   @media (max-width:640px){
-    .chipsel{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px}
-    .chipsel::-webkit-scrollbar{display:none}
-    .chipsel button{flex:0 0 auto}
-    .controls{padding:8px 0 6px}
+    .chipsel{gap:5px}
+    .chipsel button{padding:6px 10px;font-size:12px}
     .tabs button{padding:9px 4px;font-size:12px}
   }
   .tabs{display:flex;gap:6px;margin-top:10px}
@@ -237,8 +235,8 @@ const catOf=m=>m.category_name||m.category_abbrevation||'';
 const U13_BOYS_IDS = ['64952','64954','64955']; // Köpi, Upi, Lelu
 // Näyttönimen siistiminen: U11 on sekasarja -> juniorit
 function catLabel(c){ return /U11-tytöt tiikerisarja/i.test(c) ? 'U11-juniorit tiikerisarja' : c; }
-// Sarjavalinnan lyhyt näyttönimi (Suomen Cup pois napista tiiviyden vuoksi)
-function seriesLabel(k){ return k.replace(' & Suomen Cup',''); }
+// Sarjavalinnan lyhyt näyttönimi napissa (tiiviys): pois Suomen Cup, aluesarja, tiikerisarja
+function seriesLabel(k){ return k.replace(' & Suomen Cup','').replace(' aluesarja','').replace(' tiikerisarja','').replace('U20- pojat','U20-pojat').trim(); }
 // Yhdistä aikuisten sarja + Suomen Cup samaan kokonaisuuteen
 function seriesKey(c){
   if(/Miesten 2-sarja/i.test(c)||/Miesten Suomen Cup/i.test(c)) return 'Miesten 2-sarja & Suomen Cup';
